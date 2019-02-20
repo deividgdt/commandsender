@@ -1,2 +1,2 @@
 # commandsender
-Command Sender is a tool to send commands to remote devices in parallel
+Command Sender is a tool to send commands in parallel to remote devices
