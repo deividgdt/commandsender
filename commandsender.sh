@@ -9,7 +9,7 @@ commandToSend="touch commandSender.txt"
 # ficheros de logs
 logOK="/root/commsenderlogOK.txt"
 logKO="/root/commsenderlogKO.txt"
-# pass de las CTS
+# pass
 pass_dev='password'
 
 commandSender() {
