@@ -1,20 +1,21 @@
 #!/bin/bash
-# dependencias: sshpass
+# dependencies: sshpass
 
-# Comando a enviar a los dispositivos
-
+# Command to send:
 commandToSend="touch commandSender.txt"
+
+# It is possible to use the next line in order to ask the user for the command to send
 #read -p "Inserta el comando a enviar: " commandToSend
 
-# ficheros de logs
+# Logs files
 logOK="/root/commsenderlogOK.txt"
 logKO="/root/commsenderlogKO.txt"
-# pass
+
+# The password for the devices
 pass_dev='password'
 
 commandSender() {
-	# Funcion principal encargada de enviar los comandos a los dispositivos
-	# las ordenes pasadas con la variable $commandToSend
+	# Main function that will send the commands stored in the $commandToSend variable to the devices
 	if [[ ! $(ping -w1 $1 | grep "100% packet loss") ]]; then
 		echo "DEV: $ip UP" 
 		echo "$ip" >> $logOK;
@@ -26,59 +27,57 @@ commandSender() {
 }
 
 help() {
-	# Funcion encargada de mostrar ayuda al usuario
+	# Function shows the help
 	echo "-j [0-8000]"
-	echo "	Numero de conexiones que se generan en paralelo. Cualquier numero entre 0 y 8000"
-	echo "	Por ejemplo:"
+	echo "	Number of maximum connections to generate in parallel. Any number between 0 and 8000"
+	echo "	For example:"
 	echo "		commandsender.sh -j 300"
-	echo "	Establecera 300 conexiones en paralelo a 300 dispositivos, y entonces"
-	echo "	esperara a que todos los comandos hayan sido ejecutados para continuar" 
-	echo "	con las siguientes 300 conexiones."
+	echo "	It will set 300 connections in parallel to 300 devices then"
+	echo "	will wait until all the commands have been executed. Once the commands have been executed" 
+	echo "	on the 300 devices, it will continue with the next 300."
 	echo ""
-	echo "	Valor por defecto: -j 100"
+	echo "	Value by default: -j 100"
 	echo ""
-	echo "-f nombre_archivo"
-	echo "	Si desea usar otro nombre escribalo usando esta opción."
-	echo "	Por ejemplo:"
-	echo "		commandsender.sh -f /tmp/direccionesips.txt"
+	echo "-f filename"
+	echo "	If you want to use a different filename change it using this option."
+	echo "	For example:"
+	echo "		commandsender.sh -f /tmp/ipaddresses.txt"
 	echo ""
-	echo "	Valor por defecto: /root/ips.txt"
+	echo "	Value by default: /root/ips.txt"
 	echo ""
 	echo "-h"
-	echo "	Muestra la ayuda del script."
+	echo "	Show the help."
 	echo ""
 
 }
 
-# se obtienen las valores pasados en las opciones
+# We get the values passed by the user
 while getopts ":j:f:h" opt; do
 	case "$opt" in
 		j) maxJobs=$OPTARG							;;
 		f) ipsFile=$OPTARG 							;;
 		h) help; exit								;;
-		*) echo "Opción invalida. -$OPTARG"; exit	;;
+		*) echo "Invalid option. -$OPTARG"; exit				;;
 	esac
 done
 
-# si la variable $ipsFile es nula por que el usuario
-# no la ha declarado, por defecto usamos /root/ips.txt
+# If the variable $ipsFile is null, we use by default /root/ips.txt
 if [ -z $ipsFile ]; then 
 	ipsFile="/root/ips.txt"; 
 else 
 	if [ ! -f $ipsFile ]; then 
-		echo "El archivo $ipsFile no existe."; 
+		echo "The file $ipsFile does not exists."; 
 		exit 1; 
 	fi
 fi
 
-# Si la variable $maxJobs es nula por que el usuario
-# no ha pasado dicha opcion, por defecto usamos 100
+# If the variable $maxJobs is null, by default we use 100 
 if [ -z $maxJobs ]; then maxJobs=100; fi
 
-# Obtenemos todas las IPs del fichero
-listado_devices=$(cat $ipsFile)
+# We get the ip addresses from the file 
+allDevices=$(cat $ipsFile)
 
-for ip in $listado_devices; do
+for ip in $allDevices; do
 	runningJobs=$(($runningJobs + 1))
 	commandSender $ip &
 
